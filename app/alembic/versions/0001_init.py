@@ -1,5 +1,4 @@
-"""TODO migration — enable PostGIS and create geography columns
-
+"""
 Revision ID: 0001_init
 Revises:
 Create Date: 2025-09-04
@@ -14,11 +13,28 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
-    # TODO: op.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
-    # TODO: create features table and geography(Point,4326) column + GIST index
-    # TODO: create footprints table and geography(Polygon,4326) column + GIST index
-    pass
+    op.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+    op.create_table(
+        "features",
+        sa.Column("id", pg.UUID(as_uuid=True), primary_key=True),
+        sa.Column("name", sa.String(length=200), nullable=False),
+        sa.Column("geom", pg.Geography(geometry_type="POINT", srid=4326), nullable=False),
+        sa.Column("created_at", sa.TIMESTAMP(), nullable=False),
+        sa.Column("updated_at", sa.TIMESTAMP(), nullable=False),
+    )
+    op.create_index("features_geom_idx", "features", ["geom"], postgresql_using="gist")
+    op.create_table(
+        "footprints",
+        sa.Column("feature_id", pg.UUID(as_uuid=True), sa.ForeignKey("features.id", ondelete="CASCADE"), primary_key=True),
+        sa.Column("buffer_m", sa.Integer(), nullable=False),
+        sa.Column("area_m2", pg.DOUBLE_PRECISION(), nullable=False),
+        sa.Column("geom", pg.Geography(geometry_type="POINT", srid=4326), nullable=False),
+    )
+    op.create_index("footprints_geom_idx", "footprints", ["geom"], postgresql_using="gist")
 
 def downgrade():
-    # TODO: drop in reverse order and extension
-    pass
+    op.drop_index("footprints_geom_idx", "footprints")
+    op.drop_table("footprints")
+    op.drop_index("features_geom_idx", "features")
+    op.drop_table("features")
+    op.execute("DROP EXTENSION IF EXISTS postgis;")
