@@ -211,3 +211,6 @@ __marimo__/
 
 # VS Code
 .vscode/
+
+# pre-commit
+.pre-commit-config.yaml
