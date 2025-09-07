@@ -19,7 +19,6 @@ def create_feature(db: Session, name: str, lat: float, lon: float) -> uuid.UUID:
     db.commit()
     return schemas.CreateFeatureResponse(id=feature_id)
 
-
 def process_feature(db: Session, feature_id: str, buffer_m: int = 500) -> bool:
     feature_id_uuid = uuid.UUID(feature_id)
     feature = db.query(models.Feature).filter_by(id=feature_id_uuid).first()
@@ -31,10 +30,9 @@ def process_feature(db: Session, feature_id: str, buffer_m: int = 500) -> bool:
     db.commit()
     return schemas.ProcessFeatureResponse(processed=True)
 
-def get_feature(db: Session, feature_id: str) -> schemas.GetFeatureOut:
-    # TODO: select feature and its polygon from features and footprints tables
-    raise NotImplementedError
-
+def get_feature(db: Session, feature_id: str) -> models.Feature: # TODO move schema handling to api
+    feature_id_uuid = uuid.UUID(feature_id)
+    return db.query(models.Feature).filter_by(id=feature_id_uuid).first()
 
 def features_near(db: Session, lat: float, lon: float, radius_m: int) -> list[schemas.FeaturesNearResponse]:
     # TODO: select features within radius from features and footprints tables

@@ -20,10 +20,18 @@ def process_feature(feature_id: str, db: Session = Depends(get_db)):
 
 @router.get("/features/{feature_id}", response_model=schemas.GetFeatureOut)
 def get_feature(feature_id: str, db: Session = Depends(get_db)):
-    row = service.get_feature(db, feature_id)
-    if not row:
+    feature = service.get_feature(db, feature_id)
+    if not feature:
         raise HTTPException(404, "Not found")
-    return row
+    return schemas.GetFeatureOut(
+        id=feature.id,
+        name=feature.name,
+        status=feature.status,
+        geom=str(feature.geom),
+        attempts=feature.attempts,
+        created_at=feature.created_at.isoformat(),
+        updated_at=feature.updated_at.isoformat()
+    )
 
 @router.get("/features/near", response_model=schemas.GetFeaturesNearOut)
 def features_near(lat: float = Query(..., ge=-90, le=90),
