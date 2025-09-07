@@ -1,20 +1,41 @@
-# IMPLEMENT HERE — use PostGIS via raw SQL (see SERVICE_TODO.md)
+import uuid
+from geoalchemy2 import Geography
+import models
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-import uuid
+from app import schemas
+
 
 def create_feature(db: Session, name: str, lat: float, lon: float) -> uuid.UUID:
-    # TODO: insert point into features table
-    raise NotImplementedError
+    feature_id: uuid.UUID = uuid.uuid4()
+    feature = models.Feature(
+        id=feature_id, 
+        name=name, 
+        geom=Geography(geometry_type="POINT", srid=4326).from_text(f'POINT({lon} {lat})'),
+    )
+    db.session.execute(text(f"ST_SetSRID(ST_MakePoint({lon}, {lat}), 4326)::geography"))
+    db.add(feature)
+    db.commit()
+    return schemas.CreateFeatureResponse(id=feature_id)
+
 
 def process_feature(db: Session, feature_id: str, buffer_m: int = 500) -> bool:
-    # TODO: buffer point, compute area, insert polygon into footprints table, update feature status
-    raise NotImplementedError
+    feature_id_uuid = uuid.UUID(feature_id)
+    feature = db.query(models.Feature).filter_by(id=feature_id_uuid).first()
+    if not feature:
+        return schemas.ProcessFeatureResponse(processed=False)
+    feature.geom = f"ST_Buffer(feature.geom, {buffer_m})"
+    feature.status = "done"
+    feature.attempts += 1
+    db.commit()
+    return schemas.ProcessFeatureResponse(processed=True)
 
-def get_feature(db: Session, feature_id: str):
+def get_feature(db: Session, feature_id: str) -> schemas.GetFeatureOut:
     # TODO: select feature and its polygon from features and footprints tables
     raise NotImplementedError
 
-def features_near(db: Session, lat: float, lon: float, radius_m: int):
+
+def features_near(db: Session, lat: float, lon: float, radius_m: int) -> list[schemas.FeaturesNearResponse]:
     # TODO: select features within radius from features and footprints tables
     raise NotImplementedError
