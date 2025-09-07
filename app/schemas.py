@@ -23,7 +23,7 @@ class GetFeatureOut(BaseModel):
     geom: str
     attempts: int
     created_at: str
-    updated_at: Optional[str]
+    updated_at: str
 
 # Get Nearby Features
 class GetFeaturesNearOut(BaseModel):
