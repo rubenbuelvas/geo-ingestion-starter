@@ -38,4 +38,14 @@ def features_near(lat: float = Query(..., ge=-90, le=90),
                   lon: float = Query(..., ge=-180, le=180),
                   radius_m: int = Query(1000, gt=0),
                   db: Session = Depends(get_db)):
-    return service.features_near(db, lat, lon, radius_m)
+    features_near_out = schemas.GetFeaturesNearOut(features_near=[])
+    features_near_results = service.features_near(db, lat, lon, radius_m)
+    for feature in features_near_results:
+        features_near_out.features_near.append(schemas.FeatureNearOut(
+            id=feature.id,
+            name=feature.name,
+            status=feature.status,
+            geom=str(feature.geom),
+            distance_m=feature.distance_m
+        ))
+    return features_near_out

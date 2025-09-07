@@ -34,6 +34,17 @@ def get_feature(db: Session, feature_id: str) -> models.Feature: # TODO move sch
     feature_id_uuid = uuid.UUID(feature_id)
     return db.query(models.Feature).filter_by(id=feature_id_uuid).first()
 
+# Distance to point or to any part within area or buffer?
 def features_near(db: Session, lat: float, lon: float, radius_m: int) -> list[schemas.FeaturesNearResponse]:
+    point_wkt = f"SRID=4326;POINT({lon} {lat})"
+    query = text("""
+        SELECT id, name, status, geom, attempts, created_at, updated_at,
+               ST_Distance(geom, ST_GeogFromText(:point)) AS distance_m
+        FROM features
+        WHERE ST_DWithin(geom, ST_GeogFromText(:point), :radius)
+        ORDER BY distance_m ASC
+    """)
+    results = db.execute(query, {"point": point_wkt, "radius": radius_m}).fetchall()
+    return results
     # TODO: select features within radius from features and footprints tables
     raise NotImplementedError
