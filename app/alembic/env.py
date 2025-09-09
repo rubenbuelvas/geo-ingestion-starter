@@ -7,8 +7,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from app.db import Base  # type: ignore
-from app.models import Feature, Footprint  # type: ignore
+from db import Base  # type: ignore
+from models import Feature, Footprint  # type: ignore
 target_metadata = Base.metadata
 
 def run_migrations_offline():

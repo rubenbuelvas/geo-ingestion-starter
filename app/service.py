@@ -1,7 +1,7 @@
-import uuid
-from app import models
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+import uuid
+import models
 
 def create_feature(db: Session, name: str, lat: float, lon: float) -> uuid.UUID:
     feature_id: uuid.UUID = uuid.uuid4()

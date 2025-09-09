@@ -1,10 +1,10 @@
-import uuid
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Integer, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, DOUBLE_PRECISION
 from datetime import datetime, timezone
 from geoalchemy2 import Geography
-from app.db import Base
+from db import Base
+import uuid
 
 def now():
     return datetime.now(timezone.utc)
