@@ -19,7 +19,9 @@ def upgrade():
         "features",
         sa.Column("id", pg.UUID(as_uuid=True), primary_key=True),
         sa.Column("name", sa.String(length=200), nullable=False),
+        sa.Column("status", sa.String(length=32), nullable=False, server_default="queued"),
         sa.Column("geom", Geography(geometry_type="POINT", srid=4326, spatial_index=True), nullable=False),
+        sa.Column("attempts", sa.Integer(), nullable=False, server_default=sa.text("0")),
         sa.Column("created_at", sa.TIMESTAMP(), nullable=False),
         sa.Column("updated_at", sa.TIMESTAMP(), nullable=False),
     )
@@ -34,4 +36,4 @@ def upgrade():
 def downgrade():
     op.drop_table("footprints")
     op.drop_table("features")
-    op.execute("DROP EXTENSION IF EXISTS postgis;")
+    op.execute("DROP EXTENSION IF EXISTS postgis CASCADE;")

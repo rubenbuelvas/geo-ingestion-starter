@@ -27,7 +27,7 @@ class GetFeatureOut(BaseModel):
 
 # Get Nearby Features
 class GetFeaturesNearOut(BaseModel):
-    features_near: list['FeatureNearOut']
+    features_near: list["FeatureNearOut"]
 
 class FeatureNearOut(BaseModel):
     id: uuid.UUID

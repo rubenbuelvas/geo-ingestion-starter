@@ -8,6 +8,4 @@ COPY app app
 COPY app/alembic alembic
 COPY app/alembic.ini alembic.ini
 EXPOSE 8000
-#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-#CMD ["/bin/sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
-CMD ["/bin/sh", "-c", "alembic upgrade head --sql && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["/bin/sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
