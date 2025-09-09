@@ -17,6 +17,23 @@ def process_feature(feature_id: str, db: Session = Depends(get_db)):
         raise HTTPException(404, "Not found")
     return schemas.ProcessFeatureOut(processed=True)
 
+@router.get("/features/near", response_model=schemas.GetFeaturesNearOut)
+def features_near(lat: float = Query(..., ge=-90, le=90),
+                  lon: float = Query(..., ge=-180, le=180),
+                  radius_m: int = Query(1000, gt=0),
+                  db: Session = Depends(get_db)):
+    get_features_near_out = schemas.GetFeaturesNearOut(features_near=[])
+    features, distances = service.features_near(db, lat, lon, radius_m)
+    for feature, distance in zip(features, distances):
+        get_features_near_out.features_near.append(schemas.FeatureNearOut(
+            id=feature.id,
+            name=feature.name,
+            status=feature.status,
+            geom=str(feature.geom),
+            distance_m=distance
+        ))
+    return get_features_near_out
+
 @router.get("/features/{feature_id}", response_model=schemas.GetFeatureOut)
 def get_feature(feature_id: str, db: Session = Depends(get_db)):
     feature = service.get_feature(db, feature_id)
@@ -31,20 +48,3 @@ def get_feature(feature_id: str, db: Session = Depends(get_db)):
         created_at=feature.created_at.isoformat(),
         updated_at=feature.updated_at.isoformat()
     )
-
-@router.get("/features/near", response_model=schemas.GetFeaturesNearOut)
-def features_near(lat: float = Query(..., ge=-90, le=90),
-                  lon: float = Query(..., ge=-180, le=180),
-                  radius_m: int = Query(1000, gt=0),
-                  db: Session = Depends(get_db)):
-    features_near_out = schemas.GetFeaturesNearOut(features_near=[])
-    features_near_results = service.features_near(db, lat, lon, radius_m)
-    for feature in features_near_results:
-        features_near_out.features_near.append(schemas.FeatureNearOut(
-            id=feature.id,
-            name=feature.name,
-            status=feature.status,
-            geom=str(feature.geom),
-            distance_m=feature.distance_m
-        ))
-    return features_near_out
