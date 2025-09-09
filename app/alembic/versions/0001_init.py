@@ -30,7 +30,7 @@ def upgrade():
         sa.Column("feature_id", pg.UUID(as_uuid=True), sa.ForeignKey("features.id", ondelete="CASCADE"), primary_key=True),
         sa.Column("buffer_m", sa.Integer(), nullable=False),
         sa.Column("area_m2", pg.DOUBLE_PRECISION(), nullable=False),
-        sa.Column("geom", Geography(geometry_type="POINT", srid=4326, spatial_index=True), nullable=False),
+        sa.Column("geom", Geography(geometry_type="POLYGON", srid=4326, spatial_index=True), nullable=False),
     )
 
 def downgrade():
