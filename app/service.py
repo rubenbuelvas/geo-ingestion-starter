@@ -56,25 +56,28 @@ def features_near(db: Session, lat: float, lon: float, radius_m: int) -> tuple[l
     features: list[models.Feature] = []
     distances: list[float] = []
     query = text("""
-        SELECT id, name, status, features.geom, attempts, created_at, updated_at,
-               ST_Distance(geom, ST_GeogFromText(SRID=4326;POINT(:lon :lat))) AS distance_m
+        SELECT id, name, status, geom, attempts, created_at, updated_at,
+               ST_Distance(geom, ST_GeogFromText('SRID=4326;POINT(:lon :lat)')) AS distance_m
         FROM features
-        WHERE ST_DWithin(geom, ST_GeogFromText(SRID=4326;POINT(:lon :lat)), :radius_m)
+        WHERE ST_DWithin(geom, ST_GeogFromText('SRID=4326;POINT(:lon :lat)'), :radius_m)
+        ORDER BY distance_m ASC
     """)
     results = db.execute(query, {
         "lon": lon,
         "lat": lat,
         "radius_m": radius_m
-    }).fetchall()
-    for result in results:
-        features.append(models.Feature(
-            id=result.id,
-            name=result.name,
-            status=result.status,
-            geom=result.geom,
-            attempts=result.attempts,
-            created_at=result.created_at,
-            updated_at=result.updated_at
-        ))
-        distances.append(result.distance_m)
+    }).all()
+    # results is a list of Row objects, convert to list of Feature and distances
+    for row in results:
+        feature = models.Feature(
+            id=row.id,
+            name=row.name,
+            status=row.status,
+            geom=row.geom,
+            attempts=row.attempts,
+            created_at=row.created_at,
+            updated_at=row.updated_at
+        )
+        features.append(feature)
+        distances.append(row.distance_m)
     return features, distances
