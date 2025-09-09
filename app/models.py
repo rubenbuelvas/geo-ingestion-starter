@@ -3,8 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Integer, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, DOUBLE_PRECISION
 from datetime import datetime, timezone
-from db import Base
 from geoalchemy2 import Geography
+from app.db import Base
 
 def now():
     return datetime.now(timezone.utc)

@@ -1,7 +1,6 @@
 import uuid
 from geoalchemy2 import Geography
-import models
-from datetime import datetime, timezone
+from app import models
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
