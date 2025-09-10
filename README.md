@@ -178,9 +178,15 @@ curl -s "localhost:8000/features/near?lat=45.5017&lon=-73.5673&radius_m=1000"
 
 ## Possible Improvements
 
-1. **Better error handling:** While we have some basic error handling, it would be better to have more detailed error handling. Error from client (i.e. Bad formatted UUID, type mismatch) should return 4xx as status.
-2. **Use DTOs:** I added schemas for API responses, but some code in the service layer doesn't follow the DRY principle because we use dics as structs to send the results to the controllers.
-3. **Testing:** There are no unit tests in this project.
-4. **Flags for /features/near:** Filtering out non processed features was a decission I made. It would be better to have a flag query param (i.e. only_processed=true) that allows the user to filter out or not said features.
-5. **Database route:** The database route is present multiple times in the project, it should be centralized in a single config file and be accessible from both the application and alembic for migrations.
+1. **Enhanced Error Handling:** Although we have some basic error handling in place, it would benefit from more detailed responses. Errors originating from the client (e.g., poorly formatted UUIDs, type mismatches) should return a 4xx status code.
+
+2. **Utilization of DTOs:** I have added schemas for API responses; however, some code in the service layer does not adhere to the DRY (Don't Repeat Yourself) principle. We currently use dictionaries as means to send results to the controllers, which leads to redundancy.
+
+3. **Unit Testing:** There are currently no unit tests implemented in this project.
+
+4. **Flags for `/features/near`:** I made the decision to filter out unprocessed features. However, it would be more effective to include a query parameter flag (e.g., `only_processed=true`) that allows users to choose whether or not to filter these features.
+
+5. **Centralized Database Route:** The database route is present in multiple locations throughout the project. It should be centralized in a single configuration file, making it accessible from both the application and Alembic for migrations.
+
+6. **Avoid Raw SQL:** While the task instructions specified the use of raw SQL to interact with PostGIS, the project would be more maintainable if we relied more heavily on libraries such as GeoAlchemy2.
 
