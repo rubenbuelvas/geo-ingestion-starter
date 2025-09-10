@@ -19,18 +19,18 @@ class GetFeatureOut(BaseModel):
     id: uuid.UUID
     name: str
     status: str
-    geom: str
+    buffer_area_m2: float
     attempts: int
     created_at: str
     updated_at: str
 
 # Get Nearby Features
-class GetFeaturesNearOut(BaseModel):
-    features_near: list["FeatureNearOut"]
-
-class FeatureNearOut(BaseModel):
+class GetFeatureNearOut(BaseModel):
     id: uuid.UUID
     name: str
     status: str
-    geom: str
+    buffer_area_m2: float
+    attempts: int
+    created_at: str
+    updated_at: str
     distance_m: float

@@ -17,22 +17,25 @@ def process_feature(feature_id: str, db: Session = Depends(get_db)):
         raise HTTPException(404, "Not found")
     return schemas.ProcessFeatureOut(processed=True)
 
-@router.get("/features/near", response_model=schemas.GetFeaturesNearOut)
+@router.get("/features/near", response_model=list[schemas.GetFeatureNearOut])
 def features_near(lat: float = Query(..., ge=-90, le=90),
                   lon: float = Query(..., ge=-180, le=180),
                   radius_m: int = Query(1000, gt=0),
                   db: Session = Depends(get_db)):
-    get_features_near_out = schemas.GetFeaturesNearOut(features_near=[])
-    features, distances = service.features_near(db, lat, lon, radius_m)
-    for feature, distance in zip(features, distances):
-        get_features_near_out.features_near.append(schemas.FeatureNearOut(
-            id=feature.id,
-            name=feature.name,
-            status=feature.status,
-            geom=str(feature.geom),
-            distance_m=distance
+    features_near = []
+    results = service.features_near(db, lat, lon, radius_m)
+    for feature in results:
+        features_near.append(schemas.GetFeatureNearOut(
+            id=feature.get("id"),
+            name=feature.get("name"),
+            status=feature.get("status"),
+            buffer_area_m2=feature.get("buffer_area_m2"),
+            attempts=feature.get("attempts"),
+            created_at=feature.get("created_at").isoformat(),
+            updated_at=feature.get("updated_at").isoformat(),
+            distance_m=feature.get("distance_m")
         ))
-    return get_features_near_out
+    return features_near
 
 @router.get("/features/{feature_id}", response_model=schemas.GetFeatureOut)
 def get_feature(feature_id: str, db: Session = Depends(get_db)):
@@ -40,11 +43,11 @@ def get_feature(feature_id: str, db: Session = Depends(get_db)):
     if not feature:
         raise HTTPException(404, "Not found")
     return schemas.GetFeatureOut(
-        id=feature.id,
-        name=feature.name,
-        status=feature.status,
-        geom=str(feature.geom),
-        attempts=feature.attempts,
-        created_at=feature.created_at.isoformat(),
-        updated_at=feature.updated_at.isoformat()
+        id=feature.get("id"),
+        name=feature.get("name"),
+        status=feature.get("status"),
+        buffer_area_m2=feature.get("buffer_area_m2"),
+        attempts=feature.get("attempts"),
+        created_at=feature.get("created_at").isoformat(),
+        updated_at=feature.get("updated_at").isoformat(),
     )
