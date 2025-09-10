@@ -48,7 +48,7 @@ curl -s -X POST localhost:8000/features -H "content-type: application/json" -d '
 }
 ```
 
-### POST /features/<id>/process
+### POST /features/{id}/process
 
 **Description:** Procesess an existing feature, giving it a buffer area and changing its status to done. When processing the feature, we add into the table Footprints the buffer and also save the new feature area. Features and Footprints have a 1 to 1 relationship.
 
@@ -93,7 +93,7 @@ curl -s -X POST localhost:8000/features/<id>/process
 }
 ```
 
-### GET /features/<id>
+### GET /features/{id}
 
 **Description:** Gets the feature identified by the UUID. The response includdes the area which is 0 if the feature isn't still processed.
 
