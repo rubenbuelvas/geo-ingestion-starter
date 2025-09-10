@@ -178,8 +178,9 @@ curl -s "localhost:8000/features/near?lat=45.5017&lon=-73.5673&radius_m=1000"
 
 ## Possible Improvements
 
-1. **Add better error handling:** While we have some basic error handling, it would be better to have more detailed error handling. Error from client (i.e. Bad formatted UUID, type mismatch) should return 4xx as status.
-2. **Create DTOs:** I added schemas for API responses, but some code in the service layer doesn't follow the DRY principle because we use dics as structs to send the results to the controllers.
+1. **Better error handling:** While we have some basic error handling, it would be better to have more detailed error handling. Error from client (i.e. Bad formatted UUID, type mismatch) should return 4xx as status.
+2. **Use DTOs:** I added schemas for API responses, but some code in the service layer doesn't follow the DRY principle because we use dics as structs to send the results to the controllers.
 3. **Testing:** There are no unit tests in this project.
 4. **Flags for /features/near:** Filtering out non processed features was a decission I made. It would be better to have a flag query param (i.e. only_processed=true) that allows the user to filter out or not said features.
+5. **Database route:** The database route is present multiple times in the project, it should be centralized in a single config file and be accessible from both the application and alembic for migrations.
 
