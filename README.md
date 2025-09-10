@@ -6,7 +6,6 @@ Changes to the base code can be found [here](https://github.com/rubenbuelvas/geo
 
 - [Run](#run)
 - [Endpoints](#endpoints)
-- [POST /features](#post-features)
 - [Possible Improvements](#possible-improvements)
 
 ## Run
@@ -55,10 +54,10 @@ curl -s -X POST localhost:8000/features -H "content-type: application/json" -d '
 To do the feature update we use SQLAlchemy commands.
 ```python
 feature = db.query(models.Feature).filter_by(id=feature_id_uuid).first()
-    if not feature:
-        return False
-    feature.status = "done"
-    feature.attempts += 1
+if not feature:
+    return False
+feature.status = "done"
+feature.attempts += 1
 ```
 
 The insert into Footprints is managed by raw SQL.
@@ -100,8 +99,8 @@ curl -s -X POST localhost:8000/features/<id>/process
 We get the feature from the Features table and the area from the Footprints table.
 ```sql
 SELECT f.id, f.name, f.status, f.attempts, f.created_at, f.updated_at, fp.area_m2
-        FROM features f JOIN footprints fp ON f.id = fp.feature_id
-        WHERE f.id = :id
+FROM features f JOIN footprints fp ON f.id = fp.feature_id
+WHERE f.id = :id
 ```
 
 #### Request
@@ -127,36 +126,54 @@ curl -s localhost:8000/features/<id>
 }
 ```
 
-### GET /features/<id>
+### GET /features/near
 
-**Description:** Gets the feature identified by the UUID. The response includdes the area which is 0 if the feature isn't still processed.
+**Description:** Gets all the features that are processed and whose buffer area is within the radius of the designated point. Each feature has the same response as the /feature/{id} endpoint, plus the distance.
 
-We get the feature from the Features table and the area from the Footprints table.
+We use PostGIS to calculate which features are within range of our parameters.
 ```sql
-SELECT f.id, f.name, f.status, f.attempts, f.created_at, f.updated_at, fp.area_m2
-        FROM features f JOIN footprints fp ON f.id = fp.feature_id
-        WHERE f.id = :id
+SELECT f.id, f.name, f.status, f.attempts, f.created_at, f.updated_at, fp.area_m2,
+     ST_Distance(fp.geom, ST_GeogFromText('SRID=4326;POINT(:lon :lat)')) AS distance_m
+FROM features f JOIN footprints fp ON f.id = fp.feature_id
+WHERE 
+     f.status = 'done' AND
+     ST_DWithin(fp.geom, ST_GeogFromText('SRID=4326;POINT(:lon :lat)'), :radius_m)
+ORDER BY distance_m ASC
 ```
 
 #### Request
 
 ```bash
-curl -s localhost:8000/features/<id>
+curl -s "localhost:8000/features/near?lat=45.5017&lon=-73.5673&radius_m=1000"
 ```
 
 #### Response
-- **200 OK:** Returns the requested feature.
-- **404 NOT FOUND:** Returns not found if the feature doesn't exist.
-- **500 INTERNAL SERVER ERROR:** Returns nothing if an error occurs. Sending wrong formatted UUID also falls here.
+- **200 OK:** Returns the list of features within range of our point by distance.
+- **500 INTERNAL SERVER ERROR:** Returns nothing if an error occurs.
 
 ```json
-{
-    "id": "a614a9ed-2035-45d2-b88f-6534a96932b8",
-    "name": "Site A",
-    "status": "done",
-    "buffer_area_m2": 780745.320629321,
-    "attempts": 1,
-    "created_at": "2025-09-09T23:03:19.173382",
-    "updated_at": "2025-09-09T23:03:19.256604"
-}
+[
+    {
+        "id": "55c15f26-3061-471f-8cc0-d142f592c5ee",
+        "name": "Site A",
+        "status": "done",
+        "buffer_area_m2": 780745.320629321,
+        "attempts": 1,
+        "created_at": "2025-09-10T00:08:04.184871",
+        "updated_at": "2025-09-10T00:08:04.371198",
+        "distance_m": 492.61309452
+    },
+    {
+        "id": "a0f78400-36b6-4104-9c7e-67db0fdf3e8d",
+        "name": "Site C",
+        "status": "done",
+        "buffer_area_m2": 780745.3459650725,
+        "attempts": 1,
+        "created_at": "2025-09-09T22:46:05.816972",
+        "updated_at": "2025-09-10T00:10:47.839365",
+        "distance_m": 496.67890694
+    }
+]
 ```
+
+
